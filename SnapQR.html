@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>SnapQR - Custom Generator</title>
+    <!-- Qrcode.js library for fast QR generation -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <style>
+        /* General Body and Font */
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            padding: 0;
+            margin: 0;
+            background:
+                repeating-conic-gradient(#e0e0e0 0% 25%, #ffffff 0% 50%) 50% / 40px 40px;
+            /* Checker background pattern */
+            text-align: center;
+            overflow-x: hidden;
+        }
+
+        /* Moving Banner Styles */
+        .banner-strip {
+            width: 100%;
+            background: linear-gradient(135deg, #4a4a4a 0%, #2d2d2d 100%);
+            color: #ffffff;
+            padding: 12px 0;
+            font-size: 1.3em;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+            border-top: 3px solid #333;
+            border-bottom: 3px solid #333;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .banner-strip.top {
+            margin-bottom: 0;
+        }
+
+        .banner-strip.bottom {
+            margin-top: 0;
+        }
+
+        .banner-content {
+            display: inline-block;
+            padding-left: 100%;
+            animation: scroll-left 20s linear infinite;
+        }
+
+        @keyframes scroll-left {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        /* Website Name outside box */
+        .website-name {
+            font-size: 4em;
+            font-weight: bold;
+            letter-spacing: 5px;
+            margin: 30px 0 20px 0;
+
+            color: #bb7878;
+            /* what this for?    
+
+
+            */
+            text-transform: uppercase;
+            background: linear-gradient(0deg, #828181 0%, #ffffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: rgb(69, 145, 145);
+            background-clip: text;
+            position: relative;
+            display: inline-block;
+            padding: 10px 20px;
+        }
+
+
+
+        /* Main content wrapper */
+        .main-wrapper {
+            padding: 20px;
+        }
+
+        /* Container for the whole layout - mimicking a sheet of paper */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            border: 3px solid #333;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow:
+                5px 5px 0px 0px #999,
+                10px 10px 0px 0px #ccc;
+            /* Enhanced shadow for 3D/sketch effect */
+            position: relative;
+        }
+
+        /* Header Title - Sketchy and bold (now inside container as subtitle) */
+        .header-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            letter-spacing: 2px;
+            border: 2px dashed #333;
+            padding: 8px 20px;
+            display: inline-block;
+            margin-bottom: 30px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            color: #333;
+        }
+
+        /* Main Layout Section */
+        .main-content {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        /* Input and Customize Boxes */
+        .input-box,
+        .customize-box {
+            width: 30%;
+            min-width: 200px;
+            border: 2px solid #333;
+            padding: 15px;
+            text-align: left;
+            border-radius: 5px;
+            box-shadow: 2px 2px 0px 0px #999;
+        }
+
+        .box-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #333;
+            padding-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        /* Input Field Styling */
+        input[type="text"] {
+            width: 95%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #333;
+            box-shadow: inset 1px 1px 0px #ccc;
+            border-radius: 3px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Custom file upload display */
+        .file-upload-wrapper {
+            margin-bottom: 15px;
+        }
+
+        .file-upload-label {
+            display: inline-block;
+            padding: 8px 12px;
+            background-color: #f0f0f0;
+            border: 2px solid #333;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            box-shadow: 1px 1px 0px 0px #999;
+            transition: all 0.1s;
+        }
+
+        .file-upload-label:hover {
+            background-color: #e0e0e0;
+        }
+
+        .file-upload-label:active {
+            box-shadow: 0px 0px 0px 0px #999;
+            transform: translate(1px, 1px);
+        }
+
+        .file-display {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            background-color: #e8f5e9;
+            border: 1px solid #4caf50;
+            border-radius: 3px;
+            margin-top: 8px;
+        }
+
+        .file-display.active {
+            display: flex;
+        }
+
+        .file-name {
+            font-size: 0.85em;
+            color: #333;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .remove-file-icon {
+            cursor: pointer;
+            color: #d32f2f;
+            font-weight: bold;
+            font-size: 1.2em;
+            padding: 0 5px;
+            transition: color 0.2s;
+            user-select: none;
+        }
+
+        .remove-file-icon:hover {
+            color: #b71c1c;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        input[type="color"] {
+            width: 50px;
+            height: 30px;
+            padding: 0;
+            margin: 5px 0 15px;
+            border: 1px solid #333;
+        }
+
+        /* QR Code Placeholder/Canvas */
+        #qrcode {
+            width: 250px;
+            height: 250px;
+            border: 3px solid #333;
+            margin: 0 10px;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        #qrcode canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 3px;
+        }
+
+        /* Generate Button */
+        #generate-button {
+            padding: 15px 30px;
+            background-color: #a0ffa0;
+            border: 3px solid #333;
+            border-radius: 5px;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 40px;
+            cursor: pointer;
+            box-shadow: 4px 4px 0px 0px #666;
+            transition: all 0.1s;
+        }
+
+        #generate-button:active {
+            box-shadow: 2px 2px 0px 0px #666;
+            transform: translate(2px, 2px);
+        }
+
+        /* Footer/Download section */
+        .footer-actions {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 2px dashed #333;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .action-button {
+            padding: 10px 20px;
+            background-color: #f0f0f0;
+            border: 2px solid #333;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 2px 2px 0px 0px #999;
+            transition: all 0.1s;
+        }
+
+        .action-button:active {
+            box-shadow: 1px 1px 0px 0px #999;
+            transform: translate(1px, 1px);
+        }
+
+        /* Message Box Styling */
+        #message-box {
+            background-color: #ffdddd;
+            border: 2px solid #ff4444;
+            color: #cc0000;
+            padding: 10px;
+            margin-top: 15px;
+            display: none;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Top Moving Banner -->
+    <div class="banner-strip top">
+        <div class="banner-content">
+            ✨ GENERATE CUSTOM QR CODE ✨ GENERATE CUSTOM QR CODE ✨ GENERATE CUSTOM QR CODE ✨ GENERATE CUSTOM QR CODE ✨
+        </div>
+    </div>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper">
+        <!-- Website Name outside the container box -->
+        <div class="website-name">SnapQR</div>
+
+        <!-- Main Container -->
+        <div class="container">
+            <div class="header-title">Custom QR Generator</div>
+
+            <div id="message-box"></div>
+
+            <!-- Main Content Area: Input, QR, Customization -->
+            <div class="main-content">
+                <!-- Input Section -->
+                <div class="input-box">
+                    <div class="box-title">Input Content</div>
+                    <label for="text">QR Code Data (URL/Text):</label>
+                    <input id="text" type="text" placeholder="e.g., https://google.com or some text" value="" />
+                </div>
+
+                <!-- QR Code Display -->
+                <div id="qrcode">
+                    <p>Click Generate to create QR</p>
+                </div>
+
+                <!-- Customization Section -->
+                <div class="customize-box">
+                    <div class="box-title">Customize</div>
+
+                    <label for="logo-file">Logo Image (Small PNG file):</label>
+                    <div class="file-upload-wrapper">
+                        <label for="logo-file" class="file-upload-label">Choose File</label>
+                        <input id="logo-file" type="file" accept="image/png" />
+                        <div id="file-display" class="file-display">
+                            <span id="file-name" class="file-name"></span>
+                            <span class="remove-file-icon" onclick="removeFile()">✕</span>
+                        </div>
+                    </div>
+
+                    <label for="qr-color">QR Foreground Color:</label>
+                    <input id="qr-color" type="color" value="#000000" />
+                </div>
+            </div>
+
+            <!-- Generate Button -->
+            <button id="generate-button" onclick="makeQR()">GENERATE QR CODE</button>
+
+            <!-- Footer Actions -->
+            <div class="footer-actions">
+                <button class="action-button" onclick="handleDownload()">⬇️ Download PNG</button>
+                <button class="action-button" onclick="handleDownloadSVG()">🖼️ Download SVG</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Moving Banner -->
+    <div class="banner-strip bottom">
+        <div class="banner-content">
+            ✨ GENERATE CUSTOM QR CODE ✨ GENERATE CUSTOM QR CODE ✨ GENERATE CUSTOM QR CODE ✨ GENERATE CUSTOM QR CODE ✨
+        </div>
+    </div>
+
+    <!-- JavaScript for QR Generation with Color, Logo File, Download, and Share functionality -->
+    <script>
+        const MIN_QR_WIDTH = 250;
+        // Logo size is limited to 25% of the QR code to maintain scanability.
+        const LOGO_PERCENTAGE = 0.15;
+
+        function showMessage(message, isError = false) {
+            const box = document.getElementById("message-box");
+            box.textContent = message;
+            box.style.display = 'block';
+            box.style.backgroundColor = isError ? '#ffdddd' : '#ddffdd';
+            box.style.borderColor = isError ? '#ff4444' : '#44ff44';
+            box.style.color = isError ? '#cc0000' : '#00cc00';
+            setTimeout(() => { box.style.display = 'none'; }, 3000);
+        }
+
+        // Helper to convert File object to Data URL
+        function fileToDataURL(file) {
+            return new Promise((resolve, reject) => {
+                if (!file) {
+                    resolve(null);
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function makeQR() {
+            const text = document.getElementById("text").value;
+            const fgColor = document.getElementById("qr-color").value;
+            const logoFile = document.getElementById("logo-file").files[0];
+            const container = document.getElementById("qrcode");
+
+            // Clear previous content
+            container.innerHTML = "";
+
+            if (!text) {
+                showMessage("Please enter some data (URL/Text) to generate the QR code.", true);
+                return;
+            }
+
+            let logoDataUrl = null;
+
+            if (logoFile) {
+                showMessage("Reading logo image...", false);
+                try {
+                    // Convert the local file to a base64 Data URL for embedding
+                    logoDataUrl = await fileToDataURL(logoFile);
+                } catch (e) {
+                    showMessage("Error reading logo file.", true);
+                    console.error("File Read Error:", e);
+                    return;
+                }
+            }
+
+
+
+            // 1. Generate QR Code onto a canvas
+            QRCode.toCanvas(document.createElement('canvas'), text, {
+                width: MIN_QR_WIDTH,
+                color: {
+                    dark: fgColor,
+                    light: '#ffffff'
+                },
+                // Add margins to prevent logo interference with quiet zone
+                margin: 4
+            }, function (error, canvas) {
+                if (error) {
+                    console.error(error);
+                    showMessage("Error generating QR: Invalid data format.", true);
+                    return;
+                }
+
+                // 2. Handle Logo Embedding
+                if (logoDataUrl) {
+                    const img = new Image();
+
+                    img.onload = () => {
+                        try {
+                            const ctx = canvas.getContext('2d');
+                            const canvasWidth = canvas.width;
+                            const logoSize = canvasWidth * LOGO_PERCENTAGE;
+                            const x = (canvasWidth - logoSize) / 2;
+                            const y = (canvasWidth - logoSize) / 2;
+
+                            // Draw the image
+                            ctx.drawImage(img, x, y, logoSize, logoSize);
+
+                            // Draw a white border around the logo for better scanning stability
+                            ctx.strokeStyle = '#ffffff';
+                            ctx.lineWidth = 6; // slightly thicker white border
+                            ctx.strokeRect(x - 1, y - 1, logoSize + 2, logoSize + 2); // border slightly larger than image
+
+                            container.appendChild(canvas);
+                            showMessage("QR Code with Logo Generated!", false);
+
+                        } catch (e) {
+                            console.error("Canvas drawing error:", e);
+                            showMessage("Logo embedding failed. QR generated without logo.", true);
+                            container.appendChild(canvas);
+                        }
+                    };
+
+                    img.onerror = () => {
+                        console.error("Error loading logo image from Data URL.");
+                        showMessage("Error embedding logo. QR generated without logo.", true);
+                        container.appendChild(canvas);
+                    };
+
+                    img.src = logoDataUrl;
+
+                } else {
+                    // 3. If no logo, just append the canvas
+                    container.appendChild(canvas);
+                    showMessage("QR Code Generated!", false);
+                }
+            });
+        }
+
+        function handleDownload() {
+            const canvas = document.querySelector('#qrcode canvas');
+            if (!canvas) {
+                showMessage("Generate a QR code first!", true);
+                return;
+            }
+            // Create a temporary link element
+            const link = document.createElement('a');
+            link.download = `SnapQR_${Date.now()}.png`;
+            // Get the image data URL from the canvas
+            link.href = canvas.toDataURL('image/png');
+
+            // Programmatically click the link to trigger download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showMessage("Download initiated!", false);
+        }
+
+        function handleCopyImage() {
+            const canvas = document.querySelector('#qrcode canvas');
+            if (!canvas) {
+                showMessage("Generate a QR code first!", true);
+                return;
+            }
+
+            const dataURL = canvas.toDataURL('image/png');
+
+            // Use document.execCommand('copy') for better compatibility in iframe environments
+            const tempInput = document.createElement('textarea');
+            tempInput.value = dataURL;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+
+            try {
+                document.execCommand('copy');
+                showMessage("Image Data URL (Base64) copied to clipboard!", false);
+            } catch (err) {
+                console.error('Could not copy data URL: ', err);
+                showMessage("Failed to copy image data URL.", true);
+            }
+            document.body.removeChild(tempInput);
+        }
+
+        function handleDownloadSVG() {
+            const canvas = document.querySelector('#qrcode canvas');
+            if (!canvas) {
+                showMessage("Generate a QR code first!", true);
+                return;
+            }
+
+            try {
+                // Get canvas dimensions
+                const width = canvas.width;
+                const height = canvas.height;
+
+                // Get pixel data from canvas
+                const ctx = canvas.getContext('2d');
+                const imageData = ctx.getImageData(0, 0, width, height);
+                const data = imageData.data;
+
+                // Create SVG string with transparent background
+                let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`;
+
+                // Convert pixels to SVG rectangles
+                // We only add rectangles for dark pixels (QR code pattern)
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const index = (y * width + x) * 4;
+                        const r = data[index];
+                        const g = data[index + 1];
+                        const b = data[index + 2];
+                        const a = data[index + 3];
+
+                        // Check if pixel is dark (not white/light background)
+                        // We consider a pixel as part of the QR code if it's significantly darker than white
+                        if (r < 200 || g < 200 || b < 200) {
+                            const color = `rgb(${r},${g},${b})`;
+                            svgContent += `<rect x="${x}" y="${y}" width="1" height="1" fill="${color}"/>`;
+                        }
+                        // Skip white/light pixels to keep background transparent
+                    }
+                }
+
+                svgContent += '</svg>';
+
+                // Create blob and download
+                const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `SnapQR_${Date.now()}.svg`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                showMessage("SVG download initiated!", false);
+            } catch (err) {
+                console.error('Error generating SVG: ', err);
+                showMessage("Failed to generate SVG.", true);
+            }
+        }
+
+        // File upload display and remove functionality
+        document.getElementById('logo-file').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                displayFileName(file.name);
+            }
+        });
+
+        function displayFileName(fileName) {
+            const fileDisplay = document.getElementById('file-display');
+            const fileNameElement = document.getElementById('file-name');
+
+            // Truncate filename to 6 characters + extension
+            let displayName = fileName;
+            const lastDotIndex = fileName.lastIndexOf('.');
+
+            if (lastDotIndex > -1) {
+                const name = fileName.substring(0, lastDotIndex);
+                const extension = fileName.substring(lastDotIndex);
+
+                if (name.length > 6) {
+                    displayName = name.substring(0, 6) + '...' + extension;
+                }
+            } else {
+                // No extension
+                if (fileName.length > 6) {
+                    displayName = fileName.substring(0, 6) + '...';
+                }
+            }
+
+            fileNameElement.textContent = displayName;
+            fileDisplay.classList.add('active');
+        }
+
+        function removeFile() {
+            const fileInput = document.getElementById('logo-file');
+            const fileDisplay = document.getElementById('file-display');
+
+            // Clear the file input
+            fileInput.value = '';
+
+            // Hide the file display
+            fileDisplay.classList.remove('active');
+
+            showMessage("File removed successfully!", false);
+        }
+
+
+        // Initial generation on load
+        window.onload = makeQR; 
+    </script>
+</body>
+
+</html>
